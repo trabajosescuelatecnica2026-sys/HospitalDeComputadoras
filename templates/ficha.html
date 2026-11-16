@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_iconos.html" import icono %}
+{% block titulo %}Ficha {{ f.codigo }}{% endblock %}
+{% block contenido %}
+<div class="botones no-imprimir">
+  <a class="boton suave" href="{{ url_for('listado') }}">{{ icono('volver') }}Volver</a>
+  <a class="boton principal" href="{{ url_for('editar', ficha_id=f.id) }}">{{ icono('editar') }}Editar</a>
+  <a class="boton peligro" href="{{ url_for('eliminar', ficha_id=f.id) }}">{{ icono('papelera') }}Eliminar</a>
+</div>
+<p class="nota no-imprimir">{{ icono('info') }}Para imprimir el informe: Ctrl + P (en celular, menú del navegador → Imprimir).</p>
+
+<article class="informe">
+  <header class="informe-cab">
+    <div>
+      <p class="informe-tipo">Informe de diagnóstico · Hospital de Computadoras</p>
+      <h1>{{ f.codigo }}</h1>
+      <p class="informe-pac">{{ f.paciente }}{% if f.marca_modelo %} · {{ f.marca_modelo }}{% endif %}</p>
+    </div>
+    <div class="informe-meta">
+      {% if not f.estado_final and f.estado_anterior %}<span class="chip e-rev">A revisar</span>
+      {% else %}<span class="chip e-{{ f.estado_final|ec }}">{{ f.estado_final or 'Sin definir' }}</span>{% endif %}
+      {% if not f.estado_final and f.estado_anterior %}<p>Estado anterior a revisar: {{ f.estado_anterior }}</p>{% endif %}
+      <p>{{ icono('cal') }}Ingreso: {{ f.fecha_ingreso|fecha }}</p>
+      <p>{{ icono('cal') }}Egreso: {{ f.fecha_egreso|fecha }}</p>
+      <p>{{ icono('user') }}{{ f.tecnico or 'Sin técnico asignado' }}</p>
+    </div>
+  </header>
+
+  <div class="informe-grilla">
+    <section class="bloque"><h2>{{ icono('ficha') }}Síntoma</h2><p>{{ f.sintoma or '—' }}</p></section>
+    <section class="bloque"><h2>{{ icono('pc') }}Estado inicial</h2><p>{{ f.estado_inicial or '—' }}</p></section>
+    <section class="bloque"><h2>{{ icono('buscar') }}Estudios realizados</h2><p>{{ f.estudios or '—' }}</p></section>
+    <section class="bloque"><h2>{{ icono('pulso') }}Resultados</h2><p>{{ f.resultados or '—' }}</p></section>
+    <section class="bloque destacado ancho"><h2>{{ icono('chip') }}Diagnóstico</h2><p>{{ f.diagnostico or '—' }}</p></section>
+    <section class="bloque"><h2>{{ icono('llave') }}Tratamiento / intervención</h2><p>{{ f.tratamiento or '—' }}</p></section>
+    <section class="bloque"><h2>{{ icono('datos') }}Componentes reemplazados</h2>
+      {% if f.componentes %}<p>{% for c in f.componentes.split(',') if c.strip() %}<span class="tag">{{ c.strip() }}</span>{% endfor %}</p>{% else %}<p>—</p>{% endif %}</section>
+    <section class="bloque ancho"><h2>{{ icono('ok') }}Prueba final</h2><p>{{ f.prueba_final or '—' }}</p></section>
+  </div>
+  <footer class="informe-pie">Hospital de Computadoras · Expo Técnica 2026 · Escuela Técnica Dr. J. R. Vidal</footer>
+</article>
+{% endblock %}

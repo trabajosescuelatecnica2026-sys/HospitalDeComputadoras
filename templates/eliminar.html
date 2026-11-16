@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "_iconos.html" import icono %}
+{% block contenido %}
+<section class="tarjeta confirmar">
+  <span class="ico-caja grande">{{ icono('alerta') }}</span>
+  <h1>¿Eliminar la ficha {{ f.codigo }}?</h1>
+  <p>Paciente: <strong>{{ f.paciente }}</strong>. Esta acción no se puede deshacer. Conviene descargar un <a href="{{ url_for('respaldo') }}">respaldo</a> antes.</p>
+  <form method="post" class="botones">
+    <button type="submit" class="boton peligro">{{ icono('papelera') }}Sí, eliminar</button>
+    <a class="boton suave" href="{{ url_for('ver', ficha_id=f.id) }}">No, volver</a>
+  </form>
+</section>
+{% endblock %}

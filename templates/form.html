@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "_iconos.html" import icono %}
+{% block titulo %}{{ 'Nueva ficha' if modo == 'nueva' else 'Editar ' ~ ficha.codigo }}{% endblock %}
+{% block contenido %}
+{# Secciones del formulario: (nombre, etiqueta, tipo, obligatorio, ancho) #}
+{% set secciones = [
+ ('Identificación', 'pc', 'Datos de la computadora que ingresa.', [
+   ('codigo', 'Código de PC', 'codigo', False, ''),
+   ('paciente', 'Paciente o descripción', 'text', True, ''),
+   ('marca_modelo', 'Marca y modelo', 'text', False, 'ancho')]),
+ ('Ingreso', 'ficha', 'Qué le pasa y cómo llega.', [
+   ('sintoma', 'Síntoma', 'largo', True, 'ancho'),
+   ('estado_inicial', 'Estado inicial', 'largo', False, 'ancho'),
+   ('fecha_ingreso', 'Fecha y hora de ingreso', 'datetime-local', False, ''),
+   ('tecnico', 'Técnico/a responsable', 'text', False, '')]),
+ ('Diagnóstico', 'pulso', 'Pruebas realizadas y conclusión técnica.', [
+   ('estudios', 'Estudios realizados', 'largo', False, 'ancho'),
+   ('resultados', 'Resultados', 'largo', False, 'ancho'),
+   ('diagnostico', 'Diagnóstico', 'largo', False, 'ancho')]),
+ ('Tratamiento', 'llave', 'Qué se hizo para repararla.', [
+   ('tratamiento', 'Tratamiento o intervención', 'largo', False, 'ancho'),
+   ('componentes', 'Componentes reemplazados', 'text', False, 'ancho')]),
+ ('Cierre', 'ok', 'Comprobación final y estado de salida.', [
+   ('prueba_final', 'Prueba final', 'largo', False, 'ancho'),
+   ('estado_final', 'Estado final', 'estado', False, ''),
+   ('fecha_egreso', 'Fecha y hora de egreso', 'datetime-local', False, '')])
+] %}
+<div class="cab-pagina"><div>
+  <h1>{{ 'Registrar computadora' if modo == 'nueva' else 'Editar ficha ' ~ ficha.codigo }}</h1>
+  <p class="sub">Los campos con * son obligatorios.</p></div></div>
+
+<p class="nota advertencia">{{ icono('alerta') }}No cargues datos personales de los dueños (teléfonos, domicilios, documentos). Alcanza con el código de la PC y una descripción.</p>
+
+{% if errores %}<ul class="errores">{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+<form class="ficha" method="post">
+  {% for titulo, ic, ayuda, campos in secciones %}
+  <section class="tarjeta seccion">
+    <header class="sec-cab"><span class="ico-caja">{{ icono(ic) }}</span>
+      <div><h2>{{ titulo }}</h2><p>{{ ayuda }}</p></div></header>
+    <div class="grilla">
+    {% for n, etq, tipo, req, ancho in campos %}
+      <div class="campo {{ ancho }} {{ 'err' if req and errores and not datos[n] }}">
+        <label for="{{ n }}">{{ etq }}{% if req %}<b class="req">*</b>{% endif %}</label>
+        {% if tipo == 'codigo' %}
+          <input id="codigo" type="text" disabled value="{{ ficha.codigo if modo == 'editar' else 'Se genera al guardar (PC-001, PC-002…)' }}">
+        {% elif tipo == 'largo' %}
+          <textarea id="{{ n }}" name="{{ n }}" rows="3">{{ datos[n] }}</textarea>
+        {% elif tipo == 'estado' %}
+          <select id="estado_final" name="estado_final">
+            <option value="">(sin definir)</option>
+            {% for e in estados %}<option value="{{ e }}" {{ 'selected' if datos.estado_final == e }}>{{ e }}</option>{% endfor %}
+          </select>
+        {% else %}
+          <input id="{{ n }}" type="{{ tipo }}" name="{{ n }}" value="{{ datos[n] }}">
+        {% endif %}
+      </div>
+    {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  <div class="barra-guardar">
+    <button type="submit" class="boton principal">{{ icono('ok') }}Guardar ficha</button>
+    <a class="boton suave" href="{{ url_for('listado') if modo == 'nueva' else url_for('ver', ficha_id=ficha.id) }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

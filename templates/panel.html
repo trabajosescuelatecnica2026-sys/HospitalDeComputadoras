@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_iconos.html" import icono %}
+{% block contenido %}
+<section class="hero">
+  <div>
+    <h1>Panel de diagnóstico</h1>
+    <p>Seguí el ingreso, la reparación y el egreso de cada computadora durante la Expo.</p>
+    <div class="botones">
+      <a class="boton claro" href="{{ url_for('nueva') }}">{{ icono('mas') }}Registrar computadora</a>
+      <a class="boton fantasma" href="{{ url_for('listado') }}">Ver todas las fichas</a>
+    </div>
+  </div>
+  <div class="hero-deco" aria-hidden="true">{{ icono('chip') }}</div>
+</section>
+
+<section class="stats">
+  <article class="stat destacada"><span class="stat-ico">{{ icono('pc') }}</span>
+    <strong>{{ resumen.total }}</strong><span class="stat-t">Computadoras registradas</span></article>
+  {% for nombre, ic, cl in [('En funcionamiento','ok','fun'), ('Fuera de servicio','no','fue'), ('En proceso de reparación','llave','rep'), ('Sin definir','alerta','sin')] %}
+  <article class="stat t-{{ cl }}"><span class="stat-ico">{{ icono(ic) }}</span>
+    <strong>{{ resumen[nombre] }}</strong><span class="stat-t">{{ nombre }}</span>
+    <i class="barrita"><b style="width: {{ (resumen[nombre] * 100 / resumen.total)|round if resumen.total else 0 }}%"></b></i></article>
+  {% endfor %}
+</section>
+
+<section class="graficos">
+  <article class="tarjeta">
+    <h2>Ingresos de los últimos 7 días</h2>
+    <div class="barras">
+      {% set mayor = por_dia|map(attribute='n')|max %}
+      {% for d in por_dia %}
+        <div class="barra-col"><em>{{ d.n }}</em>
+          <span class="barra-b {{ 'max' if d.n == mayor and d.n > 0 }}" style="height: {{ [d.alto, 6]|max }}%"></span>
+          <small>{{ d.dia }}</small></div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="tarjeta">
+    <h2>Estado de las computadoras</h2>
+    <div class="dona-caja">
+      <svg class="dona" viewBox="0 0 36 36" role="img" aria-label="Distribución por estado final">
+        <circle class="dona-base" cx="18" cy="18" r="15.9155"/>
+        {% for s in segmentos if s.cantidad %}
+          <circle class="dona-seg c-{{ s.nombre|ec }}" cx="18" cy="18" r="15.9155"
+                  stroke-dasharray="{{ s.pct }} {{ 100 - s.pct }}" stroke-dashoffset="{{ s.offset }}"/>
+        {% endfor %}
+      </svg>
+      <ul class="leyenda">
+        {% for s in segmentos %}<li><i class="c-{{ s.nombre|ec }}"></i>{{ s.nombre }}<b>{{ s.cantidad }}</b></li>{% endfor %}
+      </ul>
+    </div>
+  </article>
+
+  <article class="tarjeta oscura">
+    <h2>Devueltas operativas</h2>
+    <p class="gran">{{ tasa }}%</p>
+    <i class="barrita"><b style="width: {{ tasa }}%"></b></i>
+    <p class="chico">{{ resumen['En funcionamiento'] }} de {{ resumen.total }} computadoras ingresadas</p>
+  </article>
+</section>
+
+<section class="tarjeta">
+  <div class="cab"><h2>Últimos registros</h2><a class="enlace" href="{{ url_for('listado') }}">Ver todos</a></div>
+  {% if ultimos %}
+  <ul class="ultimos">
+    {% for f in ultimos %}
+    <li><a href="{{ url_for('ver', ficha_id=f.id) }}">
+      <span class="ico-caja">{{ icono('pc') }}</span>
+      <span class="u-txt"><strong>{{ f.codigo }} · {{ f.paciente }}</strong><small>{{ f.marca_modelo or 'Sin marca cargada' }} · {{ f.fecha_ingreso|fecha }}</small></span>
+      {% if not f.estado_final and f.estado_anterior %}<span class="chip e-rev">A revisar</span>{% else %}<span class="chip e-{{ f.estado_final|ec }}">{{ f.estado_final or 'Sin definir' }}</span>{% endif %}
+    </a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="vacio">Todavía no hay computadoras registradas. <a href="{{ url_for('nueva') }}">Registrar la primera</a></p>
+  {% endif %}
+</section>
+{% endblock %}

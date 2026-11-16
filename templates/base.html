@@ -1,0 +1,66 @@
+{% from "_iconos.html" import icono %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14161D">
+  <title>{% block titulo %}Hospital de Computadoras{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+</head>
+<body>
+  <div class="carga" aria-hidden="true"></div>
+  {# Menú del celular: un checkbox + CSS (sin JavaScript) #}
+  <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+  <div class="app">
+    <aside class="lateral">
+      <a class="marca" href="{{ url_for('panel') }}">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="" width="40" height="40">
+        <span>Hospital de<br>Computadoras</span>
+      </a>
+      <label for="menu-toggle" class="cerrar-menu" aria-label="Cerrar menú">{{ icono('cerrar') }}</label>
+      <nav class="menu">
+        <p class="menu-titulo">Principal</p>
+        <a class="{{ 'activo' if request.endpoint == 'panel' }}" href="{{ url_for('panel') }}">{{ icono('panel') }}Panel</a>
+        <a class="{{ 'activo' if request.endpoint in ('listado', 'ver', 'editar', 'eliminar') }}" href="{{ url_for('listado') }}">{{ icono('lista') }}Fichas</a>
+        <a class="{{ 'activo' if request.endpoint == 'nueva' }}" href="{{ url_for('nueva') }}">{{ icono('mas') }}Nueva ficha</a>
+        <p class="menu-titulo">Datos</p>
+        <a href="{{ url_for('exportar') }}">{{ icono('bajar') }}Exportar CSV</a>
+        <a href="{{ url_for('respaldo') }}">{{ icono('datos') }}Respaldo</a>
+      </nav>
+      <div class="lateral-pie">
+        <strong>Expo Técnica 2026</strong>
+        <span>Escuela Técnica Dr. J. R. Vidal</span>
+        <span class="rotulo">Integrantes del grupo</span>
+        <span>Lourdes García</span>
+        <span>Abril González</span>
+        <span>Ingrid Leguizamon</span>
+        <span>Aimara Pérez</span>
+        <span class="rotulo">Profesora a cargo</span>
+        <span>Camila Galvez</span>
+      </div>
+    </aside>
+    <label for="menu-toggle" class="cortina"></label>
+
+    <div class="contenido">
+      <header class="superior{{ '' if request.endpoint == 'panel' else ' vacia' }}">
+        <label for="menu-toggle" class="hamburguesa" aria-label="Abrir menú">{{ icono('menu') }}</label>
+        {% if request.endpoint == 'panel' %}
+        <form class="buscador" method="get" action="{{ url_for('listado') }}">
+          {{ icono('buscar') }}
+          <input type="search" name="q" placeholder="Buscar por código, paciente o síntoma" aria-label="Buscar fichas">
+        </form>
+        {% endif %}
+      </header>
+
+      <main>
+        {% for m in get_flashed_messages() %}
+          <p class="toast" role="status">{{ icono('ok') }}{{ m }}</p>
+        {% endfor %}
+        {% block contenido %}{% endblock %}
+      </main>
+    </div>
+  </div>
+</body>
+</html>

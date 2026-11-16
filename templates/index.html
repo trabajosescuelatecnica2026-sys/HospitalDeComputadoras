@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_iconos.html" import icono %}
+{% block titulo %}Fichas · Hospital de Computadoras{% endblock %}
+{% block contenido %}
+<div class="cab-pagina"><div><h1>Fichas de diagnóstico</h1>
+  <p class="sub">{{ fichas|length }} de {{ resumen.total }} fichas</p></div>
+  <a class="boton principal" href="{{ url_for('nueva') }}">{{ icono('mas') }}Nueva ficha</a></div>
+
+<form class="filtros tarjeta" method="get" action="{{ url_for('listado') }}">
+  <input type="search" name="q" placeholder="Buscar por código, paciente, síntoma…" value="{{ filtros.q }}">
+  <select name="estado" aria-label="Filtrar por estado final">
+    <option value="">Todos los estados</option>
+    {% for e in estados %}<option value="{{ e }}" {{ 'selected' if filtros.estado == e }}>{{ e }}</option>{% endfor %}
+    <option value="sin_definir" {{ 'selected' if filtros.estado == 'sin_definir' }}>Sin definir</option>
+  </select>
+  <input type="text" name="marca" placeholder="Marca / modelo" value="{{ filtros.marca }}">
+  <input type="date" name="fecha" value="{{ filtros.fecha }}" aria-label="Fecha de ingreso">
+  <button type="submit" class="boton principal">{{ icono('buscar') }}Filtrar</button>
+  <a class="boton suave" href="{{ url_for('listado') }}">Limpiar</a>
+</form>
+
+{% if fichas %}
+<div class="tabla-caja">
+<table class="tabla">
+  <thead><tr><th>PC</th><th>Paciente</th><th>Marca / Modelo</th><th>Síntoma</th><th>Estado final</th><th>Ingreso</th><th>Acciones</th></tr></thead>
+  <tbody>
+  {% for f in fichas %}
+    <tr>
+      <td data-label="PC"><span class="codigo">{{ f.codigo }}</span></td>
+      <td data-label="Paciente"><strong>{{ f.paciente }}</strong></td>
+      <td data-label="Marca / Modelo">{{ f.marca_modelo or '—' }}</td>
+      <td data-label="Síntoma" class="recorte">{{ f.sintoma }}</td>
+      <td data-label="Estado final">{% if not f.estado_final and f.estado_anterior %}<span class="chip e-rev" title="Estado anterior: {{ f.estado_anterior }}. Elegí el estado nuevo en Editar.">A revisar</span>{% else %}<span class="chip e-{{ f.estado_final|ec }}">{{ f.estado_final or 'Sin definir' }}</span>{% endif %}</td>
+      <td data-label="Ingreso">{{ f.fecha_ingreso|fecha }}</td>
+      <td class="acciones">
+        <a class="ib ver" title="Ver ficha" href="{{ url_for('ver', ficha_id=f.id) }}">{{ icono('ojo') }}</a>
+        <a class="ib edi" title="Editar" href="{{ url_for('editar', ficha_id=f.id) }}">{{ icono('editar') }}</a>
+        <a class="ib del" title="Eliminar" href="{{ url_for('eliminar', ficha_id=f.id) }}">{{ icono('papelera') }}</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+  <p class="vacio tarjeta">No hay fichas con esos filtros. <a href="{{ url_for('listado') }}">Limpiar filtros</a> o <a href="{{ url_for('nueva') }}">cargar una ficha nueva</a>.</p>
+{% endif %}
+{% endblock %}
